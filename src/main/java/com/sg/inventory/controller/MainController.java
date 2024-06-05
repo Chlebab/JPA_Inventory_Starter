@@ -56,22 +56,25 @@ public class MainController {
     @PostMapping("/addProduct")
     public String addProduct(Product product, HttpServletRequest request) {
         int storeId = Integer.parseInt(request.getParameter("storeId"));
-
+        Store store = stores.findById(storeId).orElse(null);
+        product.setStore(store);
+        products.save(product);
         return "redirect:/viewInventory?id=" + storeId;
     }
     
     @GetMapping("/deleteProduct")
     public String deleteProduct(Integer id, Integer storeId) {
-
+        products.deleteById(id);
         return "redirect:/viewInventory?id=" + storeId;
     }
     
     @GetMapping("/product")
     public String displayProduct(Integer id, Model model) {
-
+        Product product = products.findById(id).orElse(null);
+        List<Supplier> supplierList = suppliers.findAll();
         
-//        model.addAttribute("product", null);
-//        model.addAttribute("suppliers", null);
+        model.addAttribute("product", product);
+        model.addAttribute("suppliers", supplierList);
         
         return "product";
     }
@@ -79,29 +82,41 @@ public class MainController {
     @PostMapping("/addSupplier")
     public String addSupplier(Supplier supplier, HttpServletRequest request) {
         int productId = Integer.parseInt(request.getParameter("productId"));
+        Product product = products.findById(productId).orElse(null);
 
+        supplier = suppliers.save(supplier);
+
+        product.getSuppliers().add(supplier);
+        products.save(product);
         
         return "redirect:/product?id=" + productId;
     }
     
     @PostMapping("/addExistingSupplier")
     public String addExistingSupplier(Integer productId, Integer supplierId) {
+        Product product = products.findById(productId).orElse(null);
+        Supplier supplier = suppliers.findById(supplierId).orElse(null);
 
+        product.getSuppliers().add(supplier);
+        products.save(product);
         
         return "redirect:/product?id=" + productId;
     }
     
     @GetMapping("/removeSupplier")
     public String removeSupplier(Integer productId, Integer supplierId) {
-
+        Product product = products.findById(productId).orElse(null);
+        Supplier supplier = suppliers.findById(supplierId).orElse(null);
+        product.getSuppliers().remove(supplier);
+        products.save(product);
         
         return "redirect:/product?id=" + productId;
     }
     
     @GetMapping("/supplier")
     public String displaySupplier(Integer id, Model model) {
-        
-//        model.addAttribute("supplier", null);
+        Supplier supplier = suppliers.findById(id).orElse(null);
+        model.addAttribute("supplier", supplier);
         
         return "supplier";
     }
